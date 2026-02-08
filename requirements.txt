@@ -8,7 +8,10 @@ click==8.3.1
 click-didyoumean==0.3.1
 click-plugins==1.1.1.2
 click-repl==0.3.0
+cron_descriptor==2.0.6
 Django==4.2
+django-celery-beat==2.8.1
+django-timezone-field==7.2.1
 djangorestframework==3.16.1
 djangorestframework_simplejwt==5.5.1
 drf-spectacular==0.29.0
@@ -26,6 +29,7 @@ psycopg2-pool==1.2
 pyinstaller==6.17.0
 pyinstaller-hooks-contrib==2025.11
 PyJWT==2.11.0
+python-crontab==3.3.0
 python-dateutil==2.9.0.post0
 PyYAML==6.0.3
 redis==7.1.0
