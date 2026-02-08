@@ -1,65 +1,106 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useEffect, useState } from "react";
+import { useRouter } from 'next/navigation';
+import api from "@/lib/axios";
+import { TodoTask } from "@/types/todo";
+import { TaskCard } from "@/components/TaskCard";
+import { LayoutDashboard, Plus, X } from "lucide-react";
+
+export default function Dashboard() {
+  const [tasks, setTasks] = useState<TodoTask[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isAdding, setIsAdding] = useState(false);
+  const [newTaskTitle, setNewTaskTitle] = useState("");
+  const router = useRouter();
+
+  const fetchTasks = async () => {
+    console.log("🧐 Dashboard is attempting to fetch tasks...");
+    try {
+      const res = await api.get("/tasks/");
+      console.log("🎉 Tasks fetched successfully!");
+      setTasks(res.data);
+    } catch (err: any) {
+      console.error("❌ Fetch failed with status:", err.response?.status);
+      // REMOVE OR COMMENT OUT THIS LINE TEMPORARILY:
+      // router.push('/login'); 
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddTask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTaskTitle) return;
+    try {
+      const res = await api.post("/tasks/", { 
+        title: newTaskTitle,
+        due_date: new Date(Date.now() + 86400000).toISOString() 
+      });
+      setTasks([res.data, ...tasks]);
+      setNewTaskTitle("");
+      setIsAdding(false);
+    } catch (err) {
+      alert("Failed to create task");
+    }
+  };
+
+  const handleToggle = async (id: number) => {
+    const task = tasks.find(t => t.id === id);
+    if (!task) return;
+    setTasks(tasks.map(t => t.id === id ? { ...t, is_completed: !t.is_completed } : t));
+    try {
+      await api.patch(`/tasks/${id}/`, { is_completed: !task.is_completed });
+    } catch (err) {
+      fetchTasks();
+    }
+  };
+
+  useEffect(() => { fetchTasks(); }, []);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <main className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-2xl mx-auto">
+        <header className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-2">
+            <LayoutDashboard className="text-blue-600" />
+            <h1 className="text-2xl font-bold text-gray-900">My Tasks</h1>
+          </div>
+          <button 
+            onClick={() => setIsAdding(!isAdding)}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-all"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+            {isAdding ? <X size={20} /> : <Plus size={20} />}
+            {isAdding ? "Cancel" : "Add Task"}
+          </button>
+        </header>
+
+        {isAdding && (
+          <form onSubmit={handleAddTask} className="mb-6 p-4 bg-white rounded-xl border-2 border-blue-100 shadow-sm animate-in fade-in slide-in-from-top-2">
+            <input 
+              autoFocus
+              type="text" 
+              placeholder="What needs to be done?"
+              className="w-full p-2 text-lg outline-none"
+              value={newTaskTitle}
+              onChange={(e) => setNewTaskTitle(e.target.value)}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+            <div className="flex justify-end mt-2">
+              <button type="submit" className="bg-blue-600 text-white px-4 py-1 rounded-md text-sm">Save Task</button>
+            </div>
+          </form>
+        )}
+
+        {loading ? (
+          <div className="text-center py-10 text-gray-400">Loading...</div>
+        ) : (
+          <div className="space-y-3">
+            {tasks.map(task => (
+              <TaskCard key={task.id} task={task} onToggle={handleToggle} />
+            ))}
+          </div>
+        )}
+      </div>
+    </main>
   );
 }

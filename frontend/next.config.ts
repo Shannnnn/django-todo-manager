@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  /* Comment out the experimental stuff for a moment */
+  // experimental: {
+  //   reactCompiler: true,
+  // },
 };
 
 export default nextConfig;
