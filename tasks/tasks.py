@@ -1,6 +1,7 @@
 from celery import shared_task
 from django.utils import timezone
 from .models import TodoTask
+from django.core.mail import send_mail
 
 @shared_task
 def check_overdue_tasks():
@@ -19,5 +20,12 @@ def check_overdue_tasks():
         # Mark as sent so we don't spam the user
         task.reminder_sent = True
         task.save()
+
+        send_mail(
+            subject=f"Task Overdue: {task.title}",
+            message=f"Hi {task.user.username}, your task is past its due date!",
+            from_email="noreply@todo.com",
+            recipient_list=[task.user.email],
+        )
 
     return f"Processed {overdue_tasks.count()} tasks."
