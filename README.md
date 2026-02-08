@@ -1,6 +1,6 @@
 # My Next.js Project
 
-A modern web application built with **Next.js**, **TypeScript**, and [insert your CSS framework, e.g., Tailwind CSS].
+A modern web application built with **Next.js**, **TypeScript**.
 
 ## 🚀 Features
 * **Type Safety:** Fully typed with TypeScript.
