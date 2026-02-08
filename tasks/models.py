@@ -9,7 +9,7 @@ class TodoTask(models.Model):
     due_date = models.DateTimeField()
     is_completed = models.BooleanField(default=False)
 
-    models.BooleanField(default=False)
+    reminder_sent = models.BooleanField(default=False)
 
 class Meta:
     ordering = ['-due_date']
